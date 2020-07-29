@@ -1,0 +1,33 @@
+---
+- name: test x509 certs with non-admin user
+  hosts: 10.48.168.3
+  connection: local
+  gather_facts: no
+  vars:
+    aci_creds: &aci_login
+      hostname: '{{ inventory_hostname }}'
+      username: ansible
+      validate_certs: no
+      use_proxy: no
+      use_ssl: yes
+    tenant_status: 'deleted'
+  tasks:
+  - name: big loop that pushes many many tenants
+    aci_rest:
+      <<: *aci_login
+      private_key: ansible.key
+      path: /api/mo/uni/tn-{{ item }}.json
+      method: post
+      content:
+        {
+          "fvTenant": {
+                  "attributes": {
+                          "name": "{{ item }}",
+                          "descr": "REST cert demo",
+                          "status": "{{ tenant_status }}"
+                          }
+                       }
+        }
+    with_sequence: start=0 end=30 format=CL2020-%02d
+
+

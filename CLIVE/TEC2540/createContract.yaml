@@ -1,0 +1,38 @@
+---
+- name: Simple Ansible Playbook for ACITEC2540
+  hosts: 10.48.168.221
+  gather_facts: no
+  connection: local
+  vars:
+    aci_creds: &aci_login
+      hostname: '{{inventory_hostname}}'
+      use_proxy: no
+      use_ssl: yes
+      username: ansible
+      password: cisco
+      validate_certs: no
+  
+  tasks:
+    - name: create a contract
+      aci_contract:
+        <<: *aci_login
+        tenant: 'myTenant'
+        contract: 'webServer'
+        scope: 'context'
+      delegate_to: localhost
+    - name: create a subject
+      aci_contract_subject:
+        <<: *aci_login
+        tenant: 'myTenant'
+        contract: 'webServer'
+        subject: 'subjectWeb'
+      delegate_to: localhost
+    - name: attach filter to subject
+      aci_contract_subject_to_filter:
+        <<: *aci_login
+        tenant: 'myTenant'
+        contract: 'webServer'
+        subject: 'subjectWeb'
+        filter: 'allow-http'
+      delegate_to: localhost
+

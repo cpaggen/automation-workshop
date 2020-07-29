@@ -1,0 +1,26 @@
+---
+- hosts: all
+  connection: local
+  vars:
+    aci_login: &aci_login
+      hostname: '{{ inventory_hostname }}'
+      username: '{{ lookup("env", "ANSIBLE_NET_USERNAME") }}' 
+      password: '{{ lookup("env", "ANSIBLE_NET_PASSWORD") }}'
+      use_proxy: no
+      use_ssl: yes
+      validate_certs: no
+  tasks:
+  - name: CREATE ACI TENANT APP PROFILE
+    aci_ap:
+      <<: *aci_login
+      ap: '{{awx_ap_name}}'
+      tenant: '{{awx_tenant_name}}'
+
+  - name: CREATE ACI TENANT APP PROFILE EPG
+    aci_epg:
+      <<: *aci_login
+      epg: '{{awx_epg_name}}'
+      ap: '{{awx_ap_name}}'
+      tenant: '{{awx_tenant_name}}'
+      bd: '{{awx_bd_name}}'
+

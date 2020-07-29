@@ -1,0 +1,21 @@
+---
+- name: Simple Ansible Playbook for ACITEC2540
+  hosts: 10.48.168.221
+  gather_facts: no
+  connection: local
+  vars:
+    aci_creds: &aci_login
+      hostname: '{{inventory_hostname}}'
+      use_proxy: no
+      use_ssl: yes
+      username: ansible
+      password: cisco
+      validate_certs: no
+  
+  tasks:
+  - name: create VRF on our tenant
+    aci_vrf:
+      <<: *aci_login
+      tenant: 'myTenant'
+      vrf: 'myVRF'
+    delegate_to: localhost

@@ -1,0 +1,20 @@
+all:
+  children:
+    aci:
+      hosts:
+        10.48.168.2:
+          aci_password: secret
+          aci_username: admin
+        10.48.168.221:
+          aci_password: secret
+          aci_username: admin
+        10.48.168.3:
+          aci_password: secret
+          aci_username: admin
+    build:
+      hosts:
+        ins-sw-bld1.cisco.com:
+          ansible_password: secret
+          ansible_user: cpaggen
+          hostname: goodluck.cisco.com
+    ungrouped: {}

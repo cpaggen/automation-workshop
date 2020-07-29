@@ -1,0 +1,39 @@
+---
+- name: Exploring structured variables
+  hosts: 10.48.168.3
+  gather_facts: no
+  connection: local
+  vars:
+    aci_creds: &aci_login
+      hostname: '{{inventory_hostname}}'
+      use_proxy: no
+      use_ssl: yes
+      username: ansible
+      password: cisco
+      validate_certs: no
+    APs:
+      - AP_01
+    EPGs:
+      - Prod
+      - Test
+    ToRs:
+      - 101
+      - 102
+    Ports:
+      - '1/1'
+      - '1/2'
+      - '1/3'
+    VLANs:
+      - 2000
+      - 2001
+  tasks:
+  - name: debug vars
+    debug:
+      msg: "{{item[0]}} {{item[1]}} {{item[2]}} {{item[3]}} {{item[4]}}"
+    with_nested:
+    - '{{ APs }}'
+    - '{{ EPGs }}'
+    - '{{ ToRs }}'
+    - '{{ Ports }}'
+    - '{{ VLANs }}'
+

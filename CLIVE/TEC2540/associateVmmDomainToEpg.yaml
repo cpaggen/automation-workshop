@@ -1,0 +1,27 @@
+---
+- name: Simple Ansible Playbook for ACITEC2540
+  hosts: 10.48.168.221
+  gather_facts: no
+  connection: local
+  vars:
+    aci_creds: &aci_login
+      hostname: '{{inventory_hostname}}'
+      use_proxy: no
+      use_ssl: yes
+      username: ansible
+      password: cisco
+      validate_certs: no
+  
+  tasks:
+    - name: Associate EPG to domain cp-ro
+      aci_epg_to_domain:
+        <<: *aci_login
+        tenant: 'myTenant'
+        ap: 'myApp'
+        epg: 'EPG_One'
+        domain: 'cp-ro'
+        domain_type: 'vmm'
+        vm_provider: 'vmware'
+        encap_mode: 'auto'
+      delegate_to: localhost
+

@@ -1,0 +1,86 @@
+---
+- name: Simple Ansible Playbook for ACITEC2540
+  hosts: 10.48.168.221
+  gather_facts: no
+  connection: local
+  vars:
+    aci_creds: &aci_login
+      hostname: '{{inventory_hostname}}'
+      use_proxy: no
+      use_ssl: yes
+      username: ansible
+      password: cisco
+      validate_certs: no
+    tenant:
+      name: 'tec2540'
+      state: 'present'
+      vrf:
+        name: 'vrf1'
+        enforce: 'enforced'
+        descr: 'ansible VRF'
+        bd:
+          name: 'bd1'
+          gw: '192.168.1.1'
+          mask: 24
+          descr: 'ansible BD'
+          scope: 'public,shared'
+      ap:
+        name: 'ap1'
+      epgs:
+        - {name: 'epg1', descr: 'epg one', bd: 'bd1', ap: 'ap1'}
+        - {name: 'epg2', descr: 'epg two', bd: 'bd1', ap: 'ap1'}
+        - {name: 'epg3', descr: 'epg three', bd: 'bd1', ap: 'ap1'}
+        - {name: 'epg4', descr: 'epg four', bd: 'bd1', ap: 'ap1'}
+        - {name: 'epg5', descr: 'epg five', bd: 'bd1', ap: 'ap1'}
+  tasks:
+  - name: create tenant on ACI using aci_tenant module
+    aci_tenant:
+      <<: *aci_login
+      tenant: '{{tenant.name}}'
+      state: '{{tenant.state}}'
+    delegate_to: localhost
+  - name: add a VRF to the tenant
+    aci_vrf:
+      <<: *aci_login
+      tenant: '{{tenant.name}}'
+      descr: '{{tenant.vrf.descr}}'
+      vrf: '{{tenant.vrf.name}}'
+      policy_control_preference: '{{tenant.vrf.enforce}}'
+      state: present
+    delegate_to: localhost
+  - name: add a BD to the tenant
+    aci_bd:
+      <<: *aci_login
+      tenant: '{{tenant.name}}'
+      vrf: '{{tenant.vrf.name}}'
+      bd: '{{tenant.vrf.bd.name}}'
+      description: '{{tenant.vrf.bd.descr}}'
+      state: present
+    delegate_to: localhost
+  - name: add a subnet to the BD
+    aci_bd_subnet:
+      <<: *aci_login
+      tenant: '{{tenant.name}}'
+      bd: '{{tenant.vrf.bd.name}}'
+      gateway: '{{tenant.vrf.bd.gw}}'
+      mask: '{{tenant.vrf.bd.mask}}'
+      scope: '{{tenant.vrf.bd.scope}}'
+      description: '{{tenant.vrf.bd.descr}}'
+      state: present
+    delegate_to: localhost
+  - name: add an App Profile to the tenant
+    aci_ap:
+      <<: *aci_login
+      tenant: '{{tenant.name}}'
+      ap: '{{tenant.ap.name}}'
+    delegate_to: localhost
+  - name: add EPGs to App Profile
+    aci_epg:
+      <<: *aci_login
+      tenant: "{{tenant.name}}"
+      ap: "{{item.ap}}"
+      epg: "{{item.name}}"
+      bd: "{{item.bd}}"
+    with_items: 
+      - '{{tenant.epgs}}'
+    delegate_to: localhost

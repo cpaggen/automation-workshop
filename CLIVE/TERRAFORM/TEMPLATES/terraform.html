@@ -1,0 +1,28 @@
+<html>
+    <head>
+        <title>{{ title }}</title>
+         <link rel="stylesheet" type= "text/css" href="{{ url_for('static', filename='/styles/stylesheet.css') }}"/>
+    </head>
+    <body>
+     <ul>
+      <li><a class="active" href="/tenants">Tenants</a></li>
+      <li><a href="/epgs">EPGs</a></li>
+      <li><a href="/endpoints">Endpoints</a></li>
+      <li><a href="/terraform">Terraform</a></li>
+    </ul>
+    <br>
+    <form name="tenantForm" method="post" action="/terraform">
+        <label for="tenantName">Tenant name:</label>
+        <input type="text" id="tenantName" name="tenantName" value="pythonTerraform">
+        <label for="tenantName">EPG count:</label>
+        <input type="text" id="epgCount" name="epgCount" value="6">
+        <label for="vmmDomain">VMM domain:</label>
+        <input type="text" id="vmmDomain" name="vmmDomain" value="vc7">
+        <input type="submit" value="Submit" class="button button2">
+    </form>
+    {% if plan %}
+    <h3>Terraform output</h3>
+    <p><div style="white-space: pre-wrap;">{{ plan[1] }}</div></p>
+    {% endif %}
+    </body>
+</html>

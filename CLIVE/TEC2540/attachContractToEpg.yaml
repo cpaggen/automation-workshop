@@ -1,0 +1,24 @@
+---
+- name: Simple Ansible Playbook for ACITEC2540
+  hosts: 10.48.168.221
+  gather_facts: no
+  connection: local
+  vars:
+    aci_creds: &aci_login
+      hostname: '{{inventory_hostname}}'
+      use_proxy: no
+      use_ssl: yes
+      username: ansible
+      password: cisco
+      validate_certs: no
+  
+  tasks:
+    - name: attach contract to EPG Web
+      aci_epg_to_contract:
+        <<: *aci_login
+        tenant: 'myTenant'
+        ap: 'myApp'
+        epg: 'EPG_One'
+        contract: 'webServer'
+        contract_type: 'provider'
+      delegate_to: localhost

@@ -1,0 +1,30 @@
+---
+- hosts: all
+  connection: local
+  vars:
+    aci_login: &aci_login
+      hostname: '{{ inventory_hostname }}'
+      username: '{{ lookup("env", "ANSIBLE_NET_USERNAME") }}' 
+      password: '{{ lookup("env", "ANSIBLE_NET_PASSWORD") }}'
+      use_proxy: no
+      use_ssl: yes
+      validate_certs: no
+  tasks:
+  - name: Create BD
+    aci_bd:
+      <<: *aci_login
+      tenant: '{{awx_tenant_name}}'
+      bd: '{{awx_bd_name}}'
+      vrf: '{{awx_vrf_name}}'
+      arp_flooding: True
+      l2_unknown_unicast: proxy
+      l3_unknown_multicast: flood
+      multi_dest: bd-flood
+
+  - name: CREATE ACI TENANT BD SUBNET
+    aci_bd_subnet:
+      <<: *aci_login
+      tenant: '{{awx_tenant_name}}'
+      bd: '{{awx_bd_name}}'
+      gateway: '{{awx_bd_ip}}'
+      mask: '{{awx_bd_mask}}'

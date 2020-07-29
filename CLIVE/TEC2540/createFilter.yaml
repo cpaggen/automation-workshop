@@ -1,0 +1,31 @@
+---
+- name: Simple Ansible Playbook for ACITEC2540
+  hosts: 10.48.168.221
+  gather_facts: no
+  connection: local
+  vars:
+    aci_creds: &aci_login
+      hostname: '{{inventory_hostname}}'
+      use_proxy: no
+      use_ssl: yes
+      username: ansible
+      password: cisco
+      validate_certs: no
+  
+  tasks:
+    - name: create a filter
+      aci_filter:
+        <<: *aci_login
+        tenant: 'myTenant'
+        filter: 'allow-http'
+      delegate_to: localhost
+    - name: create a filter entry
+      aci_filter_entry:
+        <<: *aci_login
+        tenant: 'myTenant'
+        filter: 'allow-http'
+        entry: 'http'
+        ether_type: ip
+        ip_protocol: tcp
+        dst_port: '80'
+      delegate_to: localhost

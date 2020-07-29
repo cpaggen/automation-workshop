@@ -1,0 +1,25 @@
+---
+- name: Simple Ansible Playbook for ACITEC2540
+  hosts: 10.48.168.221
+  gather_facts: no
+  connection: local
+  vars:
+    aci_creds: &aci_login
+      hostname: '{{inventory_hostname}}'
+      use_proxy: no
+      use_ssl: yes
+      username: ansible
+      password: cisco
+      validate_certs: no
+  vars_prompt:
+    - name: tenant
+      prompt: "Name of the tenant to delete"
+      private: no  
+
+  tasks:
+  - name: deleting tenant on ACI using aci_tenant module
+    aci_tenant:
+      <<: *aci_login
+      tenant: '{{vars.tenant}}'
+      state: absent
+    delegate_to: localhost
