@@ -1,6 +1,6 @@
 This repo contains sample Ansible, Terraform and Python code I used during a customer automation workshop
 
-Copyright 2020 - Chris Paggen
+Copyright 2020 - Chris Paggen; this code is not released as part of my employment with Cisco Systems, it is my own.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
