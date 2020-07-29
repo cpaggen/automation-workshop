@@ -1,0 +1,196 @@
+---
+- name: Push a basi tenant with stuff for video
+  hosts: apic
+  connection: local
+  gather_facts: False
+
+  vars:
+    aci_login: &aci_login
+      hostname: '{{ apic_host }}'
+      username: '{{ apic_username }}'
+      password: '{{ apic_password }}'
+      #      private_key: '{{ apic_private_key }}'
+      use_proxy: '{{ apic_use_proxy }}'
+      validate_certs: '{{ apic_validate_certs }}'
+
+  vars_prompt:
+    - name: "tenant"
+      prompt: "Which tenant do we want this L3Out to live?"
+      private: no
+
+  tasks:
+    - name: Let's make sure that tenant exists
+      aci_tenant:
+        <<: *aci_login
+        state: "present"
+        tenant: "{{ tenant }}"
+        descr: "Tenant created by Ansible for Video"
+      tags: tenant, vrf, bd, filter, contract, app, epg
+
+    - name: Create an L3Out Object
+      aci_l3out:
+        <<: *aci_login
+        state: "present"
+        tenant: "{{ tenant }}"
+        name: ASA_INTERNET_WEST
+        domain: ASA_L3_OUT_WEST
+        vrf: V1
+        l3protocol: eigrp
+        asn: 100
+        route_control: export
+      tags: l3out
+
+    - name: Push L3Out config to object
+      aci_rest:
+        <<: *aci_login
+        method: post
+        path: /api/mo/uni.json
+        content:
+              {
+      "l3extOut": {
+        "attributes": {
+          "annotation": "",
+          "dn": "uni/tn-{{ tenant }}/out-ASA_INTERNET_WEST",
+          "enforceRtctrl": "export",
+          "name": "ASA_INTERNET_WEST",
+          "targetDscp": "unspecified"
+        },
+        "children": [
+          {
+            "l3extRsL3DomAtt": {
+              "attributes": {
+                "annotation": "",
+                "tDn": "uni/l3dom-ASA_L3_OUT_WEST"
+              }
+            }
+          },
+          {
+            "l3extRsEctx": {
+              "attributes": {
+                "annotation": "",
+                "tnFvCtxName": "V1"
+              }
+            }
+          },
+          {
+            "l3extLNodeP": {
+              "attributes": {
+                "annotation": "",
+                "configIssues": "",
+                "name": "ASA_INTERNET_WEST_nodeProfile",
+                "tag": "yellow-green",
+                "targetDscp": "unspecified"
+              },
+              "children": [
+                {
+                  "l3extRsNodeL3OutAtt": {
+                    "attributes": {
+                      "annotation": "",
+                      "configIssues": "",
+                      "rtrId": "51.1.1.1",
+                      "rtrIdLoopBack": "yes",
+                      "tDn": "topology/pod-1/node-101"
+                    }
+                  }
+                },
+                {
+                  "l3extLIfP": {
+                    "attributes": {
+                      "annotation": "",
+                      "name": "ASA_INTERNET_WEST_interfaceProfile",
+                      "prio": "unspecified",
+                      "tag": "yellow-green"
+                    },
+                    "children": [
+                      {
+                        "l3extRsPathL3OutAtt": {
+                          "attributes": {
+                            "addr": "5.5.5.2/24",
+                            "annotation": "",
+                            "autostate": "disabled",
+                            "encap": "unknown",
+                            "encapScope": "local",
+                            "ifInstT": "l3-port",
+                            "ipv6Dad": "enabled",
+                            "llAddr": "::",
+                            "mac": "00:22:BD:F8:19:FF",
+                            "mode": "regular",
+                            "mtu": "inherit",
+                            "tDn": "topology/pod-1/paths-101/pathep-[eth1/19]",
+                            "targetDscp": "unspecified"
+                          }
+                        }
+                      },
+                      {
+                        "eigrpIfP": {
+                          "attributes": {
+                            "name": ""
+                          },
+                          "children": [
+                            {
+                              "eigrpRsIfPol": {
+                                "attributes": {
+                                  "annotation": "",
+                                  "tnEigrpIfPolName": "default"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "l3extInstP": {
+              "attributes": {
+                "annotation": "",
+                "exceptionTag": "",
+                "floodOnEncap": "disabled",
+                "matchT": "AtleastOne",
+                "name": "EXT_INET_WEST",
+                "prefGrMemb": "exclude",
+                "prio": "unspecified",
+                "targetDscp": "unspecified"
+              },
+              "children": [
+                {
+                  "fvRsProv": {
+                    "attributes": {
+                      "annotation": "",
+                      "intent": "install",
+                      "matchT": "AtleastOne",
+                      "prio": "unspecified",
+                      "tnVzBrCPName": "default"
+                    }
+                  }
+                },
+                {
+                  "l3extSubnet": {
+                    "attributes": {
+                      "aggregate": "",
+                      "annotation": "",
+                      "ip": "0.0.0.0/0",
+                      "name": "ALL_NETS_WEST",
+                      "nameAlias": "",
+                      "scope": "import-security"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "eigrpExtP": {
+              "attributes": {
+                "annotation": "",
+                "asn": "100"
+              }
+            }
+          }
+        ]
+      }
+    }
